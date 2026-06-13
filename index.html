@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TalkMate - Тренажёр разговорного английского</title>
+    <title>TalkMate - English Speaking Simulator</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-       /* Сброс стилей и переменные */
+       /* Reset styles and variables */
        :root {
            --bg-color: #0f172a;
            --card-bg: rgba(30, 41, 59, 0.7);
@@ -33,7 +33,7 @@
            overflow-x: hidden;
        }
 
-       /* Фоновые элементы для "премиального" вида (Glassmorphism blobs) */
+       /* Background elements for premium look (Glassmorphism blobs) */
        .bg-blob {
            position: fixed;
            border-radius: 50%;
@@ -56,7 +56,7 @@
            background: #8b5cf6;
        }
 
-       /* Шапка сайта */
+       /* Header */
        header {
            padding: 20px 40px;
            display: flex;
@@ -81,7 +81,7 @@
            gap: 10px;
        }
 
-       /* Основной контейнер */
+       /* Main container */
        main {
            flex: 1;
            padding: 40px;
@@ -91,7 +91,7 @@
            box-sizing: border-box;
        }
 
-       /* Главный экран (Сетка ситуаций) */
+       /* Home screen (Situations grid) */
        #home-screen h2 {
            font-size: 32px;
            margin-bottom: 40px;
@@ -138,7 +138,7 @@
            line-height: 1.4;
        }
 
-       /* Экран диалога */
+       /* Dialogue screen */
        #dialogue-screen {
            display: none;
            max-width: 800px;
@@ -169,7 +169,7 @@
            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
        }
 
-       /* Секция собеседника */
+       /* Interlocutor section */
        .interlocutor-section {
            display: flex;
            gap: 24px;
@@ -233,7 +233,7 @@
            background: var(--primary-hover);
        }
 
-       /* Секция опций ответа */
+       /* Response options section */
        .options-section {
            display: flex;
            flex-direction: column;
@@ -280,11 +280,11 @@
        .option-btn.selected::after {
            opacity: 1;
            transform: translateX(0);
-           content: '\f028'; /* Иконка звука */
+           content: '\f028'; /* Sound icon */
            color: var(--primary-color);
        }
 
-       /* Секция микрофона и записи */
+       /* Microphone and recording section */
        .action-section {
            display: none;
            flex-direction: column;
@@ -386,7 +386,7 @@
            background: rgba(255, 255, 255, 0.15);
        }
        
-       /* Обратная связь (результат распознавания) */
+       /* Feedback (recognition result) */
        .feedback {
            margin-top: 10px;
            padding: 20px 25px;
@@ -430,7 +430,7 @@
            margin-top: 10px;
        }
 
-       /* Финальный экран */
+       /* Final screen */
        #finished-screen {
            display: none;
            text-align: center;
@@ -481,7 +481,7 @@
            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.4);
        }
 
-       /* Анимации */
+       /* Animations */
        @keyframes fadeIn {
            from { opacity: 0; }
            to { opacity: 1; }
@@ -505,7 +505,7 @@
            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); transform: scale(1); }
        }
 
-       /* Адаптивность для мобильных */
+       /* Mobile responsiveness */
        @media (max-width: 768px) {
            header { padding: 15px 20px; }
            main { padding: 20px; }
@@ -520,32 +520,32 @@
     </style>
 </head>
 <body>
-    <!-- Фоновые элементы -->
+    <!-- Background elements -->
     <div class="bg-blob blob-1"></div>
     <div class="bg-blob blob-2"></div>
 
     <header>
         <h1><i class="fa-solid fa-microphone-lines"></i> TalkMate</h1>
         <button id="home-btn" class="btn btn-skip" style="display:none;">
-            <i class="fa-solid fa-house"></i> На главную
+            <i class="fa-solid fa-house"></i> Home
         </button>
     </header>
 
     <main>
-        <!-- Главный экран -->
+        <!-- Home screen -->
         <div id="home-screen">
-            <h2>Выберите ситуацию для тренировки</h2>
+            <h2>Choose a situation to practice</h2>
             <div class="grid" id="situations-grid">
-                <!-- Карточки генерируются через JS -->
+                <!-- Cards generated via JS -->
             </div>
         </div>
 
-        <!-- Экран диалога -->
+        <!-- Dialogue screen -->
         <div id="dialogue-screen">
             <div class="progress-container">
                 <div class="progress-text">
-                    <span id="progress-label">Шаг 1 из 3</span>
-                    <span id="situation-title-label" style="font-weight: 400; opacity: 0.8;">В ресторане</span>
+                    <span id="progress-label">Step 1 of 3</span>
+                    <span id="situation-title-label" style="font-weight: 400; opacity: 0.8;">At the restaurant</span>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progress-fill"></div>
@@ -558,7 +558,7 @@
                     <div class="interlocutor-name" id="interlocutor-name">Waiter</div>
                     <div class="speech-bubble">
                         <span id="interlocutor-text">Hi there! Are you ready to order?</span>
-                        <button class="speak-btn" id="replay-audio-btn" title="Послушать снова">
+                        <button class="speak-btn" id="replay-audio-btn" title="Listen again">
                             <i class="fa-solid fa-volume-high"></i>
                         </button>
                     </div>
@@ -566,22 +566,22 @@
             </div>
 
             <div class="options-section" id="options-container">
-                <!-- Опции ответа генерируются через JS -->
+                <!-- Response options generated via JS -->
             </div>
 
             <div class="action-section" id="action-section">
-                <div class="target-phrase-label">Включите микрофон и произнесите:</div>
+                <div class="target-phrase-label">Turn on your microphone and say:</div>
                 <div class="target-phrase" id="target-phrase">Yes, I'd like a chicken sandwich.</div>
                 
                 <div class="mic-btn-wrapper">
-                    <button class="mic-btn" id="mic-btn" title="Нажмите, чтобы говорить">
+                    <button class="mic-btn" id="mic-btn" title="Click to speak">
                         <i class="fa-solid fa-microphone"></i>
                     </button>
-                    <div class="mic-status">Слушаю вас...</div>
+                    <div class="mic-status">Listening...</div>
                 </div>
                 
                 <div class="action-buttons">
-                    <button class="btn btn-skip" id="skip-btn"><i class="fa-solid fa-forward"></i> Пропустить</button>
+                    <button class="btn btn-skip" id="skip-btn"><i class="fa-solid fa-forward"></i> Skip</button>
                 </div>
 
                 <div class="feedback" id="feedback-box">
@@ -591,23 +591,23 @@
             </div>
         </div>
 
-        <!-- Финальный экран -->
+        <!-- Final screen -->
         <div id="finished-screen">
             <i class="fa-solid fa-trophy trophy-icon"></i>
             <h2>Well done!</h2>
-            <p>Вы успешно завершили этот диалог. Ваше произношение и уверенность становятся всё лучше!</p>
+            <p>You have successfully completed this dialogue. Your pronunciation and confidence are getting better!</p>
             <button class="btn btn-primary" id="back-home-btn">
-                <i class="fa-solid fa-list"></i> Выбрать новую ситуацию
+                <i class="fa-solid fa-list"></i> Choose a new situation
             </button>
         </div>
     </main>
 
     <script>
-        // База данных ситуаций
+        // Situations database
         const situations = [
             {
                 id: 'cafe',
-                title: 'В кафе / ресторане',
+                title: 'In a cafe / restaurant',
                 subtitle: 'Ordering food',
                 image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80',
                 dialogue: [
@@ -645,7 +645,7 @@
             },
             {
                 id: 'interview',
-                title: 'На собеседовании',
+                title: 'At a job interview',
                 subtitle: 'Job interview',
                 image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80',
                 dialogue: [
@@ -683,7 +683,7 @@
             },
             {
                 id: 'airport',
-                title: 'В аэропорту',
+                title: 'At the airport',
                 subtitle: 'At the airport',
                 image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=600&q=80',
                 dialogue: [
@@ -721,7 +721,7 @@
             },
             {
                 id: 'shopping',
-                title: 'В магазине',
+                title: 'At the store',
                 subtitle: 'Shopping',
                 image: 'https://images.unsplash.com/photo-1481437156560-3205f6a55735?auto=format&fit=crop&w=600&q=80',
                 dialogue: [
@@ -759,7 +759,7 @@
             },
             {
                 id: 'meeting',
-                title: 'Новое знакомство',
+                title: 'New acquaintance',
                 subtitle: 'Meeting someone new',
                 image: 'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=600&q=80',
                 dialogue: [
@@ -797,7 +797,7 @@
             },
             {
                 id: 'teacher',
-                title: 'Разговор с учителем',
+                title: 'Talking to a teacher',
                 subtitle: 'Talking to a teacher',
                 image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80',
                 dialogue: [
@@ -835,7 +835,7 @@
             },
             {
                 id: 'club',
-                title: 'Запись в кружок',
+                title: 'Joining a school club',
                 subtitle: 'Joining a school club',
                 image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=600&q=80',
                 dialogue: [
@@ -873,7 +873,7 @@
             },
             {
                 id: 'cafeteria',
-                title: 'В школьной столовой',
+                title: 'At the school cafeteria',
                 subtitle: 'At the cafeteria',
                 image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80',
                 dialogue: [
@@ -911,7 +911,7 @@
             },
             {
                 id: 'classmate',
-                title: 'Новый одноклассник',
+                title: 'New classmate',
                 subtitle: 'Meeting a classmate',
                 image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80',
                 dialogue: [
@@ -949,7 +949,7 @@
             },
             {
                 id: 'friends',
-                title: 'На перемене',
+                title: 'At recess',
                 subtitle: 'Chatting at break time',
                 image: 'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?auto=format&fit=crop&w=600&q=80',
                 dialogue: [
@@ -987,7 +987,7 @@
             },
             {
                 id: 'homework',
-                title: 'Помощь с ДЗ',
+                title: 'Homework help',
                 subtitle: 'Asking for homework help',
                 image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80',
                 dialogue: [
@@ -1025,7 +1025,7 @@
             },
             {
                 id: 'late',
-                title: 'Опоздание на урок',
+                title: 'Late for class',
                 subtitle: 'Explaining being late',
                 image: 'https://images.unsplash.com/photo-1501139083538-0139583c060f?auto=format&fit=crop&w=600&q=80',
                 dialogue: [
@@ -1063,7 +1063,7 @@
             },
             {
                 id: 'hobby',
-                title: 'Разговор о хобби',
+                title: 'Talking about hobbies',
                 subtitle: 'Talking about hobbies',
                 image: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=600&q=80',
                 dialogue: [
@@ -1101,7 +1101,7 @@
             },
             {
                 id: 'intro',
-                title: 'О себе перед классом',
+                title: 'Introducing yourself',
                 subtitle: 'Introducing yourself',
                 image: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=600&q=80',
                 dialogue: [
@@ -1139,7 +1139,7 @@
             },
             {
                 id: 'subjects',
-                title: 'Любимые предметы',
+                title: 'Favorite subjects',
                 subtitle: 'Favourite school subjects',
                 image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=600&q=80',
                 dialogue: [
@@ -1177,7 +1177,7 @@
             },
             {
                 id: 'taxi',
-                title: 'Заказ такси',
+                title: 'Ordering a taxi',
                 subtitle: 'Ordering a taxi',
                 image: 'taxi.png',
                 dialogue: [
@@ -1215,7 +1215,7 @@
             },
             {
                 id: 'hotel',
-                title: 'Бронирование отеля',
+                title: 'Booking a hotel',
                 subtitle: 'Booking a hotel',
                 image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80',
                 dialogue: [
@@ -1253,7 +1253,7 @@
             },
             {
                 id: 'doctor',
-                title: 'У врача',
+                title: 'At the doctor',
                 subtitle: 'At the doctor',
                 image: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=600&q=80',
                 dialogue: [
@@ -1291,7 +1291,7 @@
             }
         ];
 
-        // Состояние приложения
+        // Application state
         let currentSituation = null;
         let currentTurnIndex = 0;
         let selectedOptionText = '';
@@ -1300,7 +1300,7 @@
         let synth = window.speechSynthesis;
         let currentUtterance = null;
 
-        // DOM Элементы
+        // DOM Elements
         const screens = {
             home: document.getElementById('home-screen'),
             dialogue: document.getElementById('dialogue-screen'),
@@ -1328,7 +1328,7 @@
         const feedbackMessage = document.getElementById('feedback-message');
         const transcriptText = document.getElementById('transcript-text');
 
-        // Инициализация
+        // Initialization
         function init() {
             renderSituations();
             setupSpeechRecognition();
@@ -1339,13 +1339,13 @@
             skipBtn.addEventListener('click', nextTurn);
             micBtn.addEventListener('click', toggleRecording);
 
-            // Решаем баг Chrome с загрузкой голосов
+            // Fixing Chrome voices loading bug
             if (speechSynthesis.onvoiceschanged !== undefined) {
                 speechSynthesis.onvoiceschanged = () => synth.getVoices();
             }
         }
 
-        // Отрисовка карточек меню
+        // Render menu cards
         function renderSituations() {
             situationsGrid.innerHTML = '';
             situations.forEach(sit => {
@@ -1355,7 +1355,7 @@
                     <img src="${sit.image}" alt="${sit.title}">
                     <div class="card-content">
                         <h3>${sit.title}</h3>
-                        <p style="color: var(--text-muted); font-size: 14px; margin: 0;">${sit.subtitle} • ${sit.dialogue.length} шагов</p>
+                        <p style="color: var(--text-muted); font-size: 14px; margin: 0;">${sit.subtitle} • ${sit.dialogue.length} steps</p>
                     </div>
                 `;
                 card.addEventListener('click', () => startDialogue(sit));
@@ -1363,7 +1363,7 @@
             });
         }
 
-        // Навигация
+        // Navigation
         function showScreen(screenName) {
             Object.values(screens).forEach(s => s.style.display = 'none');
             screens[screenName].style.display = 'block';
@@ -1380,7 +1380,7 @@
             window.scrollTo(0, 0);
         }
 
-        // Логика диалога
+        // Dialogue logic
         function startDialogue(situation) {
             currentSituation = situation;
             currentTurnIndex = 0;
@@ -1395,7 +1395,7 @@
             
             // Обновление прогресс-бара
             const total = currentSituation.dialogue.length;
-            progressLabel.textContent = `Шаг ${currentTurnIndex + 1} из ${total}`;
+            progressLabel.textContent = `Step ${currentTurnIndex + 1} of ${total}`;
             progressFill.style.width = `${((currentTurnIndex) / total) * 100}%`;
             
             // Обновление собеседника с анимацией
@@ -1509,7 +1509,7 @@
                 console.error("Speech Recognition не поддерживается в этом браузере.");
                 micBtn.style.display = 'none';
                 document.querySelector('.target-phrase-label').innerHTML = 
-                    '<span style="color:#ef4444">Ваш браузер не поддерживает голосовой ввод.</span><br>Пожалуйста, используйте Chrome или Edge. Вы можете использовать кнопку "Пропустить" для продолжения.';
+                    '<span style="color:#ef4444">Ваш браузер не поддерживает голосовой ввод.</span><br>Пожалуйста, используйте Chrome или Edge. Вы можете использовать кнопку "Skip" для продолжения.';
                 return;
             }
             
@@ -1537,13 +1537,13 @@
             };
             
             recognition.onerror = (event) => {
-                console.error("Ошибка микрофона:", event.error);
+                console.error("Microphone error:", event.error);
                 isRecording = false;
                 micBtn.classList.remove('recording');
                 micBtn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
                 
                 if (event.error !== 'no-speech' && event.error !== 'aborted') {
-                    showFeedback(false, "Ошибка микрофона. Убедитесь, что дали разрешение.", "");
+                    showFeedback(false, "Microphone error. Ensure you have granted permissions.", "");
                 }
             };
         }
@@ -1569,7 +1569,7 @@
             }
         }
 
-        // Логика проверки произношения
+        // Pronunciation check logic
         function cleanText(text) {
             return text.toLowerCase().replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").trim();
         }
@@ -1580,11 +1580,11 @@
             
             let isCorrect = false;
             
-            // Полное совпадение или если человек сказал нужную фразу и добавил лишнее
+            // Exact match or if the user said the target phrase and added extra words
             if (actual === expected || actual.includes(expected)) {
                 isCorrect = true;
             } else {
-                // Если неполное совпадение - проверяем по словам
+                // If incomplete match - check word by word
                 const expWords = expected.split(" ");
                 const actWords = actual.split(" ");
                 let matches = 0;
@@ -1596,26 +1596,26 @@
                 const matchRatio = matches / expWords.length;
                 const actRatio = actWords.length / expWords.length;
                 
-                // Строгая проверка: минимум 75% слов из фразы сказано правильно
-                // И сказано не меньше 60% от количества слов нужной фразы
+                // Строгая проверка: минимум 75% слов of фразы сказано правильно
+                // And the user said at least 60% of the words from the target phrase
                 if (matchRatio >= 0.75 && actRatio >= 0.6) { 
                     isCorrect = true;
                 }
             }
             
             if (isCorrect) {
-                showFeedback(true, "Отлично! (Well done!)", transcript);
+                showFeedback(true, "Excellent! (Well done!)", transcript);
                 micBtn.style.pointerEvents = 'none';
                 micBtn.style.opacity = '0.5';
                 
-                // Автоматический переход к следующему шагу через 2.5 секунды
+                // Auto transition to next step after 2.5 seconds
                 setTimeout(() => {
                     micBtn.style.pointerEvents = 'auto';
                     micBtn.style.opacity = '1';
                     nextTurn();
                 }, 2500);
             } else {
-                showFeedback(false, "Попробуйте еще раз! (Try again)", transcript);
+                showFeedback(false, "Give it another try! (Try again)", transcript);
             }
         }
 
@@ -1627,7 +1627,7 @@
             feedbackMessage.innerHTML = `${icon} ${message}`;
             
             if (transcript) {
-                transcriptText.innerHTML = `Вы сказали: <br><strong>"${transcript}"</strong>`;
+                transcriptText.innerHTML = `You said: <br><strong>"${transcript}"</strong>`;
             } else {
                 transcriptText.textContent = '';
             }
@@ -1635,7 +1635,7 @@
             feedbackBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        // Запуск
+        // Start
         window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
