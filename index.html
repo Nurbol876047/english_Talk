@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalkMate - Тренажёр разговорного английского</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+       /* Сброс стилей и переменные */
+       :root {
+           --bg-color: #0f172a;
+           --card-bg: rgba(30, 41, 59, 0.7);
+           --primary-color: #3b82f6;
+           --primary-hover: #2563eb;
+           --text-color: #f8fafc;
+           --text-muted: #94a3b8;
+           --success-color: #10b981;
+           --danger-color: #ef4444;
+           --glass-border: rgba(255, 255, 255, 0.1);
+           --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+       }
+
+       body {
+           margin: 0;
+           padding: 0;
+           font-family: 'Outfit', sans-serif;
+           background-color: var(--bg-color);
+           color: var(--text-color);
+           min-height: 100vh;
+           display: flex;
+           flex-direction: column;
+           overflow-x: hidden;
+       }
+
+       /* Фоновые элементы для "премиального" вида (Glassmorphism blobs) */
+       .bg-blob {
+           position: fixed;
+           border-radius: 50%;
+           filter: blur(120px);
+           z-index: -1;
+           opacity: 0.4;
+       }
+       .blob-1 {
+           top: -100px;
+           left: -100px;
+           width: 500px;
+           height: 500px;
+           background: #3b82f6;
+       }
+       .blob-2 {
+           bottom: -150px;
+           right: -100px;
+           width: 600px;
+           height: 600px;
+           background: #8b5cf6;
+       }
+
+       /* Шапка сайта */
+       header {
+           padding: 20px 40px;
+           display: flex;
+           align-items: center;
+           justify-content: space-between;
+           border-bottom: 1px solid var(--glass-border);
+           background: rgba(15, 23, 42, 0.8);
+           backdrop-filter: blur(15px);
+           position: sticky;
+           top: 0;
+           z-index: 10;
+       }
+       header h1 {
+           font-size: 26px;
+           font-weight: 700;
+           margin: 0;
+           background: linear-gradient(135deg, #60a5fa, #c084fc);
+           -webkit-background-clip: text;
+           -webkit-text-fill-color: transparent;
+           display: flex;
+           align-items: center;
+           gap: 10px;
+       }
+
+       /* Основной контейнер */
+       main {
+           flex: 1;
+           padding: 40px;
+           max-width: 1200px;
+           margin: 0 auto;
+           width: 100%;
+           box-sizing: border-box;
+       }
+
+       /* Главный экран (Сетка ситуаций) */
+       #home-screen h2 {
+           font-size: 32px;
+           margin-bottom: 40px;
+           text-align: center;
+           font-weight: 600;
+       }
+       .grid {
+           display: grid;
+           grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+           gap: 30px;
+       }
+       .card {
+           background: var(--card-bg);
+           border: 1px solid var(--glass-border);
+           border-radius: 20px;
+           overflow: hidden;
+           cursor: pointer;
+           transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+           box-shadow: var(--glass-shadow);
+           backdrop-filter: blur(10px);
+           position: relative;
+       }
+       .card:hover {
+           transform: translateY(-10px);
+           box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+           border-color: rgba(59, 130, 246, 0.5);
+       }
+       .card img {
+           width: 100%;
+           height: 180px;
+           object-fit: cover;
+           transition: transform 0.5s ease;
+       }
+       .card:hover img {
+           transform: scale(1.08);
+       }
+       .card-content {
+           padding: 20px;
+       }
+       .card h3 {
+           margin: 0 0 10px 0;
+           font-size: 18px;
+           font-weight: 600;
+           line-height: 1.4;
+       }
+
+       /* Экран диалога */
+       #dialogue-screen {
+           display: none;
+           max-width: 800px;
+           margin: 0 auto;
+           animation: fadeIn 0.5s ease;
+       }
+       .progress-container {
+           margin-bottom: 40px;
+       }
+       .progress-text {
+           display: flex;
+           justify-content: space-between;
+           margin-bottom: 12px;
+           color: var(--text-muted);
+           font-size: 15px;
+           font-weight: 600;
+       }
+       .progress-bar {
+           height: 8px;
+           background: rgba(255, 255, 255, 0.1);
+           border-radius: 4px;
+           overflow: hidden;
+       }
+       .progress-fill {
+           height: 100%;
+           background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+           width: 0%;
+           transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+       }
+
+       /* Секция собеседника */
+       .interlocutor-section {
+           display: flex;
+           gap: 24px;
+           margin-bottom: 40px;
+           animation: slideRight 0.5s ease forwards;
+       }
+       .avatar {
+           width: 70px;
+           height: 70px;
+           border-radius: 50%;
+           background: #1e293b;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           font-size: 35px;
+           border: 2px solid var(--primary-color);
+           flex-shrink: 0;
+           box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+       }
+       .speech-bubble-wrapper {
+           flex: 1;
+       }
+       .interlocutor-name {
+           font-size: 15px;
+           font-weight: 600;
+           color: var(--text-muted);
+           margin-bottom: 8px;
+           text-transform: uppercase;
+           letter-spacing: 1px;
+       }
+       .speech-bubble {
+           background: var(--card-bg);
+           padding: 24px;
+           border-radius: 0 24px 24px 24px;
+           border: 1px solid var(--glass-border);
+           font-size: 22px;
+           line-height: 1.5;
+           backdrop-filter: blur(10px);
+           position: relative;
+           box-shadow: var(--glass-shadow);
+       }
+       .speak-btn {
+           position: absolute;
+           bottom: -18px;
+           right: 20px;
+           background: var(--primary-color);
+           color: white;
+           border: none;
+           width: 36px;
+           height: 36px;
+           border-radius: 50%;
+           cursor: pointer;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           transition: transform 0.2s, background 0.2s;
+           box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+       }
+       .speak-btn:hover {
+           transform: scale(1.15);
+           background: var(--primary-hover);
+       }
+
+       /* Секция опций ответа */
+       .options-section {
+           display: flex;
+           flex-direction: column;
+           gap: 16px;
+       }
+       .option-btn {
+           background: rgba(255, 255, 255, 0.03);
+           border: 1px solid var(--glass-border);
+           padding: 20px 24px;
+           border-radius: 16px;
+           color: var(--text-color);
+           font-size: 18px;
+           font-family: 'Outfit', sans-serif;
+           text-align: left;
+           cursor: pointer;
+           transition: all 0.2s ease;
+           backdrop-filter: blur(10px);
+           display: flex;
+           align-items: center;
+           justify-content: space-between;
+       }
+       .option-btn::after {
+           content: '\f105';
+           font-family: 'Font Awesome 6 Free';
+           font-weight: 900;
+           opacity: 0;
+           transform: translateX(-10px);
+           transition: all 0.2s ease;
+       }
+       .option-btn:hover {
+           background: rgba(255, 255, 255, 0.08);
+           border-color: rgba(59, 130, 246, 0.5);
+           transform: translateX(8px);
+       }
+       .option-btn:hover::after {
+           opacity: 1;
+           transform: translateX(0);
+       }
+       .option-btn.selected {
+           background: rgba(59, 130, 246, 0.15);
+           border-color: var(--primary-color);
+           box-shadow: inset 0 0 0 1px var(--primary-color);
+       }
+       .option-btn.selected::after {
+           opacity: 1;
+           transform: translateX(0);
+           content: '\f028'; /* Иконка звука */
+           color: var(--primary-color);
+       }
+
+       /* Секция микрофона и записи */
+       .action-section {
+           display: none;
+           flex-direction: column;
+           align-items: center;
+           margin-top: 40px;
+           padding-top: 40px;
+           border-top: 1px solid var(--glass-border);
+           animation: slideUp 0.5s ease forwards;
+       }
+       .target-phrase-label {
+           font-size: 16px;
+           color: var(--text-muted);
+           margin-bottom: 12px;
+           text-transform: uppercase;
+           letter-spacing: 1px;
+       }
+       .target-phrase {
+           font-size: 28px;
+           font-weight: 600;
+           color: var(--primary-color);
+           margin-bottom: 40px;
+           text-align: center;
+           line-height: 1.4;
+       }
+       .mic-btn-wrapper {
+           position: relative;
+           margin-bottom: 30px;
+       }
+       .mic-btn {
+           width: 90px;
+           height: 90px;
+           border-radius: 50%;
+           background: linear-gradient(135deg, #ef4444, #b91c1c);
+           border: none;
+           color: white;
+           font-size: 36px;
+           cursor: pointer;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+           transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+       }
+       .mic-btn:hover {
+           transform: scale(1.08);
+       }
+       .mic-btn.recording {
+           animation: pulse 1.5s infinite;
+           background: linear-gradient(135deg, #f59e0b, #d97706);
+           box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+       }
+       .mic-status {
+           position: absolute;
+           bottom: -30px;
+           left: 50%;
+           transform: translateX(-50%);
+           white-space: nowrap;
+           font-size: 14px;
+           color: var(--text-muted);
+           font-weight: 600;
+           opacity: 0;
+           transition: opacity 0.3s;
+       }
+       .mic-btn.recording + .mic-status {
+           opacity: 1;
+           color: #fca5a5;
+       }
+       
+       .action-buttons {
+           display: flex;
+           gap: 15px;
+           margin-bottom: 20px;
+       }
+       .btn {
+           padding: 14px 28px;
+           border-radius: 12px;
+           border: none;
+           font-family: 'Outfit', sans-serif;
+           font-size: 16px;
+           font-weight: 600;
+           cursor: pointer;
+           transition: all 0.2s;
+           display: flex;
+           align-items: center;
+           gap: 8px;
+       }
+       .btn:hover {
+           transform: translateY(-2px);
+       }
+       .btn:active {
+           transform: translateY(0);
+       }
+       .btn-skip {
+           background: rgba(255, 255, 255, 0.08);
+           color: var(--text-color);
+           border: 1px solid var(--glass-border);
+       }
+       .btn-skip:hover {
+           background: rgba(255, 255, 255, 0.15);
+       }
+       
+       /* Обратная связь (результат распознавания) */
+       .feedback {
+           margin-top: 10px;
+           padding: 20px 25px;
+           border-radius: 16px;
+           text-align: center;
+           width: 100%;
+           max-width: 500px;
+           display: none;
+           animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+           backdrop-filter: blur(10px);
+       }
+       .feedback.success {
+           background: rgba(16, 185, 129, 0.15);
+           border: 1px solid rgba(16, 185, 129, 0.3);
+           color: #34d399;
+           display: block;
+       }
+       .feedback.error {
+           background: rgba(239, 68, 68, 0.15);
+           border: 1px solid rgba(239, 68, 68, 0.3);
+           color: #fca5a5;
+           display: block;
+       }
+       .feedback-message {
+           font-size: 18px;
+           font-weight: 600;
+           margin-bottom: 8px;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           gap: 8px;
+       }
+       .transcript-text {
+           font-style: italic;
+           font-size: 15px;
+           color: var(--text-color);
+           opacity: 0.9;
+           padding: 10px;
+           background: rgba(0,0,0,0.2);
+           border-radius: 8px;
+           margin-top: 10px;
+       }
+
+       /* Финальный экран */
+       #finished-screen {
+           display: none;
+           text-align: center;
+           padding: 60px 20px;
+           background: var(--card-bg);
+           border: 1px solid var(--glass-border);
+           border-radius: 30px;
+           backdrop-filter: blur(15px);
+           box-shadow: var(--glass-shadow);
+           animation: slideUp 0.6s ease forwards;
+       }
+       .trophy-icon {
+           font-size: 90px;
+           background: linear-gradient(135deg, #f59e0b, #fbbf24);
+           -webkit-background-clip: text;
+           -webkit-text-fill-color: transparent;
+           margin-bottom: 25px;
+           filter: drop-shadow(0 10px 20px rgba(245, 158, 11, 0.3));
+       }
+       #finished-screen h2 {
+           font-size: 42px;
+           margin-bottom: 15px;
+           font-weight: 700;
+       }
+       #finished-screen p {
+           color: var(--text-muted);
+           margin-bottom: 45px;
+           font-size: 20px;
+           max-width: 500px;
+           margin-left: auto;
+           margin-right: auto;
+           line-height: 1.5;
+       }
+       .btn-primary {
+           background: linear-gradient(135deg, #3b82f6, #60a5fa);
+           color: white;
+           padding: 18px 40px;
+           font-size: 18px;
+           border-radius: 16px;
+           text-decoration: none;
+           display: inline-flex;
+           align-items: center;
+           gap: 10px;
+           box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+       }
+       .btn-primary:hover {
+           background: linear-gradient(135deg, #2563eb, #3b82f6);
+           box-shadow: 0 15px 30px rgba(59, 130, 246, 0.4);
+       }
+
+       /* Анимации */
+       @keyframes fadeIn {
+           from { opacity: 0; }
+           to { opacity: 1; }
+       }
+       @keyframes slideUp {
+           from { opacity: 0; transform: translateY(30px); }
+           to { opacity: 1; transform: translateY(0); }
+       }
+       @keyframes slideRight {
+           from { opacity: 0; transform: translateX(-30px); }
+           to { opacity: 1; transform: translateX(0); }
+       }
+       @keyframes scaleIn {
+           from { opacity: 0; transform: scale(0.9); }
+           to { opacity: 1; transform: scale(1); }
+       }
+       @keyframes pulse {
+           0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); transform: scale(1); }
+           50% { transform: scale(1.05); }
+           70% { box-shadow: 0 0 0 25px rgba(245, 158, 11, 0); }
+           100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); transform: scale(1); }
+       }
+
+       /* Адаптивность для мобильных */
+       @media (max-width: 768px) {
+           header { padding: 15px 20px; }
+           main { padding: 20px; }
+           .speech-bubble { font-size: 18px; padding: 18px; }
+           .target-phrase { font-size: 22px; }
+           .avatar { width: 55px; height: 55px; font-size: 28px; }
+           .option-btn { font-size: 16px; padding: 16px 20px; }
+           #home-screen h2 { font-size: 26px; }
+           #finished-screen h2 { font-size: 32px; }
+           .mic-btn { width: 75px; height: 75px; font-size: 28px; }
+       }
+    </style>
+</head>
+<body>
+    <!-- Фоновые элементы -->
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+
+    <header>
+        <h1><i class="fa-solid fa-microphone-lines"></i> TalkMate</h1>
+        <button id="home-btn" class="btn btn-skip" style="display:none;">
+            <i class="fa-solid fa-house"></i> На главную
+        </button>
+    </header>
+
+    <main>
+        <!-- Главный экран -->
+        <div id="home-screen">
+            <h2>Выберите ситуацию для тренировки</h2>
+            <div class="grid" id="situations-grid">
+                <!-- Карточки генерируются через JS -->
+            </div>
+        </div>
+
+        <!-- Экран диалога -->
+        <div id="dialogue-screen">
+            <div class="progress-container">
+                <div class="progress-text">
+                    <span id="progress-label">Шаг 1 из 3</span>
+                    <span id="situation-title-label" style="font-weight: 400; opacity: 0.8;">В ресторане</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+
+            <div class="interlocutor-section">
+                <div class="avatar" id="interlocutor-avatar">🧑‍🍳</div>
+                <div class="speech-bubble-wrapper">
+                    <div class="interlocutor-name" id="interlocutor-name">Waiter</div>
+                    <div class="speech-bubble">
+                        <span id="interlocutor-text">Hi there! Are you ready to order?</span>
+                        <button class="speak-btn" id="replay-audio-btn" title="Послушать снова">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="options-section" id="options-container">
+                <!-- Опции ответа генерируются через JS -->
+            </div>
+
+            <div class="action-section" id="action-section">
+                <div class="target-phrase-label">Включите микрофон и произнесите:</div>
+                <div class="target-phrase" id="target-phrase">Yes, I'd like a chicken sandwich.</div>
+                
+                <div class="mic-btn-wrapper">
+                    <button class="mic-btn" id="mic-btn" title="Нажмите, чтобы говорить">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
+                    <div class="mic-status">Слушаю вас...</div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-skip" id="skip-btn"><i class="fa-solid fa-forward"></i> Пропустить</button>
+                </div>
+
+                <div class="feedback" id="feedback-box">
+                    <div class="feedback-message" id="feedback-message"></div>
+                    <div class="transcript-text" id="transcript-text"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Финальный экран -->
+        <div id="finished-screen">
+            <i class="fa-solid fa-trophy trophy-icon"></i>
+            <h2>Well done!</h2>
+            <p>Вы успешно завершили этот диалог. Ваше произношение и уверенность становятся всё лучше!</p>
+            <button class="btn btn-primary" id="back-home-btn">
+                <i class="fa-solid fa-list"></i> Выбрать новую ситуацию
+            </button>
+        </div>
+    </main>
+
+    <script>
+        // База данных ситуаций
+        const situations = [
+            {
+                id: 'cafe',
+                title: 'В кафе / ресторане',
+                subtitle: 'Ordering food',
+                image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80',
+                dialogue: [
+                    {
+                        interlocutorName: 'Waiter',
+                        interlocutorAvatar: '🧑‍🍳',
+                        interlocutorText: 'Hi there! Are you ready to order?',
+                        options: [
+                            'Yes, I\'d like a chicken sandwich.',
+                            'Not yet, I need a few more minutes.',
+                            'What is today\'s special?'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Waiter',
+                        interlocutorAvatar: '🧑‍🍳',
+                        interlocutorText: 'Our special today is grilled salmon with salad. Would you like to try it?',
+                        options: [
+                            'That sounds delicious. I\'ll take it.',
+                            'No thanks, I\'ll just stick to the sandwich.',
+                            'Does it come with a drink?'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Waiter',
+                        interlocutorAvatar: '🧑‍🍳',
+                        interlocutorText: 'It comes with a choice of coffee or tea. What would you prefer?',
+                        options: [
+                            'I will have a black coffee, please.',
+                            'Green tea sounds perfect.',
+                            'Just a glass of water, please.'
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'interview',
+                title: 'На собеседовании',
+                subtitle: 'Job interview',
+                image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80',
+                dialogue: [
+                    {
+                        interlocutorName: 'Interviewer',
+                        interlocutorAvatar: '💼',
+                        interlocutorText: 'Good morning. Please take a seat. Could you tell me a little about yourself?',
+                        options: [
+                            'Good morning. I\'m a recent graduate with a passion for coding.',
+                            'Hi! I love playing video games and reading books.',
+                            'I have five years of experience in marketing and sales.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Interviewer',
+                        interlocutorAvatar: '💼',
+                        interlocutorText: 'That\'s great. Why are you interested in this position?',
+                        options: [
+                            'I admire your company\'s innovative projects.',
+                            'I want to learn new skills and grow as a professional.',
+                            'I heard the salary and benefits are very good here.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Interviewer',
+                        interlocutorAvatar: '💼',
+                        interlocutorText: 'Where do you see yourself in five years?',
+                        options: [
+                            'I hope to be leading my own team in this company.',
+                            'I want to become an expert in software development.',
+                            'I am not entirely sure yet, to be honest.'
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'airport',
+                title: 'В аэропорту',
+                subtitle: 'At the airport',
+                image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=600&q=80',
+                dialogue: [
+                    {
+                        interlocutorName: 'Agent',
+                        interlocutorAvatar: '✈️',
+                        interlocutorText: 'Good afternoon. May I see your passport and ticket, please?',
+                        options: [
+                            'Yes, of course. Here you go.',
+                            'I can\'t find my ticket, just a moment.',
+                            'Do you need my ID card as well?'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Agent',
+                        interlocutorAvatar: '✈️',
+                        interlocutorText: 'Thank you. Are you checking any bags today?',
+                        options: [
+                            'Just this one suitcase.',
+                            'No, I only have carry-on luggage.',
+                            'I have two bags to check in.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Agent',
+                        interlocutorAvatar: '✈️',
+                        interlocutorText: 'Here is your boarding pass. Your gate is A14. Have a nice flight!',
+                        options: [
+                            'Thank you so much. Have a good day.',
+                            'Could you tell me how to get to gate A14?',
+                            'What time does the boarding start?'
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'shopping',
+                title: 'В магазине',
+                subtitle: 'Shopping',
+                image: 'https://images.unsplash.com/photo-1481437156560-3205f6a55735?auto=format&fit=crop&w=600&q=80',
+                dialogue: [
+                    {
+                        interlocutorName: 'Assistant',
+                        interlocutorAvatar: '🛍️',
+                        interlocutorText: 'Hello! Let me know if you need help finding anything.',
+                        options: [
+                            'Thank you, I\'m just looking around.',
+                            'Actually, do you have this shirt in a medium size?',
+                            'Where are the fitting rooms?'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Assistant',
+                        interlocutorAvatar: '🛍️',
+                        interlocutorText: 'Let me check the back for a medium. Yes, here it is!',
+                        options: [
+                            'Perfect, I\'ll go try it on.',
+                            'Thanks, but I changed my mind.',
+                            'Do you have it in blue as well?'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Assistant',
+                        interlocutorAvatar: '🛍️',
+                        interlocutorText: 'It looks great on you! Would you like to buy it?',
+                        options: [
+                            'Yes, I\'ll take it. Where can I pay?',
+                            'It\'s a bit too tight. I\'ll leave it.',
+                            'Can I pay with a credit card?'
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'meeting',
+                title: 'Новое знакомство',
+                subtitle: 'Meeting someone new',
+                image: 'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=600&q=80',
+                dialogue: [
+                    {
+                        interlocutorName: 'Alex',
+                        interlocutorAvatar: '👋',
+                        interlocutorText: 'Hi, I don\'t think we\'ve met. I\'m Alex.',
+                        options: [
+                            'Nice to meet you, Alex. I\'m Sarah.',
+                            'Hello! My name is John.',
+                            'Hey Alex, nice party, isn\'t it?'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Alex',
+                        interlocutorAvatar: '👋',
+                        interlocutorText: 'Nice to meet you! So, what do you do for a living?',
+                        options: [
+                            'I\'m a software engineer at a tech company.',
+                            'I am currently studying at university.',
+                            'I work as a graphic designer.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Alex',
+                        interlocutorAvatar: '👋',
+                        interlocutorText: 'Oh, that sounds really interesting! Do you enjoy it?',
+                        options: [
+                            'Yes, I love it. It\'s very creative.',
+                            'It can be stressful, but it\'s rewarding.',
+                            'It\'s okay, but I\'m looking for a change.'
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'teacher',
+                title: 'Разговор с учителем',
+                subtitle: 'Talking to a teacher',
+                image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=600&q=80',
+                dialogue: [
+                    {
+                        interlocutorName: 'Mr. Smith',
+                        interlocutorAvatar: '👨‍🏫',
+                        interlocutorText: 'Hello there. How are you doing with the new topic we covered today?',
+                        options: [
+                            'It was a bit difficult, but I think I understand it.',
+                            'I am completely lost. Could you explain it again?',
+                            'It was very easy for me, thank you.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Mr. Smith',
+                        interlocutorAvatar: '👨‍🏫',
+                        interlocutorText: 'I\'d be happy to go over it again. Which part was confusing?',
+                        options: [
+                            'The second equation was hard to follow.',
+                            'I didn\'t understand the main concept.',
+                            'Actually, I think I\'ll just read the textbook first.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Mr. Smith',
+                        interlocutorAvatar: '👨‍🏫',
+                        interlocutorText: 'Alright, let\'s review it together after class. Does that work for you?',
+                        options: [
+                            'Yes, that would be perfect. Thank you!',
+                            'I have practice today, can we do it tomorrow?',
+                            'Sure, see you after class.'
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'club',
+                title: 'Запись в кружок',
+                subtitle: 'Joining a school club',
+                image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=600&q=80',
+                dialogue: [
+                    {
+                        interlocutorName: 'President',
+                        interlocutorAvatar: '🤖',
+                        interlocutorText: 'Welcome to the Robotics Club! Are you looking to join?',
+                        options: [
+                            'Yes, I am very interested in robotics.',
+                            'I\'m just looking around to see what you do.',
+                            'My friend told me to check this club out.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'President',
+                        interlocutorAvatar: '🤖',
+                        interlocutorText: 'Awesome! Do you have any previous experience building robots?',
+                        options: [
+                            'No, I am a complete beginner.',
+                            'I took a coding class last year.',
+                            'Yes, I built a small robot for a science fair.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'President',
+                        interlocutorAvatar: '🤖',
+                        interlocutorText: 'That\'s fine, we welcome all skill levels. Would you like to sign up?',
+                        options: [
+                            'Yes, please! Where do I sign?',
+                            'I need to think about it. When is the deadline?',
+                            'What are the meeting times?'
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'cafeteria',
+                title: 'В школьной столовой',
+                subtitle: 'At the cafeteria',
+                image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80',
+                dialogue: [
+                    {
+                        interlocutorName: 'Lunch Lady',
+                        interlocutorAvatar: '🍲',
+                        interlocutorText: 'Next in line! What can I get for you today?',
+                        options: [
+                            'I\'ll have a slice of pepperoni pizza, please.',
+                            'Could I get the chicken salad?',
+                            'What is the soup of the day?'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Lunch Lady',
+                        interlocutorAvatar: '🍲',
+                        interlocutorText: 'The soup is tomato basil. Do you want a bowl of that?',
+                        options: [
+                            'Yes, that sounds perfect.',
+                            'No, I\'ll just take the pizza.',
+                            'Can I get a half bowl instead?'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Lunch Lady',
+                        interlocutorAvatar: '🍲',
+                        interlocutorText: 'Alright. That will be five dollars and fifty cents.',
+                        options: [
+                            'Here is six dollars. Keep the change.',
+                            'Can I pay with my student card?',
+                            'Oops, I forgot my wallet.'
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'classmate',
+                title: 'Новый одноклассник',
+                subtitle: 'Meeting a classmate',
+                image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80',
+                dialogue: [
+                    {
+                        interlocutorName: 'Classmate',
+                        interlocutorAvatar: '🧑‍🎓',
+                        interlocutorText: 'Hi, are you new here?',
+                        options: [
+                            'Yes, I just transferred here.',
+                            'No, I\'ve been here for a year.',
+                            'Yes, my name is David.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Classmate',
+                        interlocutorAvatar: '🧑‍🎓',
+                        interlocutorText: 'Nice to meet you. I\'m Sarah.',
+                        options: [
+                            'Nice to meet you too.',
+                            'What is your name?',
+                            'I don\'t know anyone here.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Classmate',
+                        interlocutorAvatar: '🧑‍🎓',
+                        interlocutorText: 'Let me show you around if you want.',
+                        options: [
+                            'That would be great, thanks!',
+                            'No, I am fine by myself.',
+                            'Where is the library?'
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'friends',
+                title: 'На перемене',
+                subtitle: 'Chatting at break time',
+                image: 'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?auto=format&fit=crop&w=600&q=80',
+                dialogue: [
+                    {
+                        interlocutorName: 'Friend',
+                        interlocutorAvatar: '🙋‍♂️',
+                        interlocutorText: 'Hey! How was your math test?',
+                        options: [
+                            'It was really difficult.',
+                            'I haven\'t taken it yet.',
+                            'It was a piece of cake!'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Friend',
+                        interlocutorAvatar: '🙋‍♂️',
+                        interlocutorText: 'I\'m so hungry. Are you going to the cafeteria?',
+                        options: [
+                            'Yes, let\'s grab some snacks.',
+                            'No, I brought my own lunch.',
+                            'I\'m not hungry right now.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Friend',
+                        interlocutorAvatar: '🙋‍♂️',
+                        interlocutorText: 'Did you watch the game last night?',
+                        options: [
+                            'Yes, it was amazing!',
+                            'No, I fell asleep early.',
+                            'I don\'t really like sports.'
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'homework',
+                title: 'Помощь с ДЗ',
+                subtitle: 'Asking for homework help',
+                image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80',
+                dialogue: [
+                    {
+                        interlocutorName: 'Classmate',
+                        interlocutorAvatar: '📚',
+                        interlocutorText: 'Hey, do you have a minute to help me?',
+                        options: [
+                            'Sure, what do you need?',
+                            'I am a bit busy right now.',
+                            'Of course, I can help you later.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Classmate',
+                        interlocutorAvatar: '📚',
+                        interlocutorText: 'I don\'t understand this physics problem.',
+                        options: [
+                            'Let\'s take a look together.',
+                            'I didn\'t understand it either.',
+                            'You should ask the teacher.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Classmate',
+                        interlocutorAvatar: '📚',
+                        interlocutorText: 'Thanks! That makes so much more sense now.',
+                        options: [
+                            'You\'re welcome. Glad I could help.',
+                            'Anytime! Let me know if you need more help.',
+                            'Don\'t mention it.'
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'late',
+                title: 'Опоздание на урок',
+                subtitle: 'Explaining being late',
+                image: 'https://images.unsplash.com/photo-1501139083538-0139583c060f?auto=format&fit=crop&w=600&q=80',
+                dialogue: [
+                    {
+                        interlocutorName: 'Teacher',
+                        interlocutorAvatar: '😠',
+                        interlocutorText: 'You are late. Class started ten minutes ago.',
+                        options: [
+                            'I\'m very sorry, my bus was delayed.',
+                            'I overslept, it won\'t happen again.',
+                            'I couldn\'t find my notebook.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Teacher',
+                        interlocutorAvatar: '😠',
+                        interlocutorText: 'Please make sure you are on time tomorrow.',
+                        options: [
+                            'I understand. It won\'t happen again.',
+                            'I will try my best.',
+                            'Can I sit down now?'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Teacher',
+                        interlocutorAvatar: '😠',
+                        interlocutorText: 'Take your seat and open your book to page twenty.',
+                        options: [
+                            'Thank you. What page did you say?',
+                            'Alright, I\'m opening it now.',
+                            'I forgot my book at home.'
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'hobby',
+                title: 'Разговор о хобби',
+                subtitle: 'Talking about hobbies',
+                image: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=600&q=80',
+                dialogue: [
+                    {
+                        interlocutorName: 'Friend',
+                        interlocutorAvatar: '🎨',
+                        interlocutorText: 'What do you like to do in your free time?',
+                        options: [
+                            'I really enjoy painting and drawing.',
+                            'I usually play video games.',
+                            'I like to read science fiction books.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Friend',
+                        interlocutorAvatar: '🎨',
+                        interlocutorText: 'That\'s cool! How long have you been doing that?',
+                        options: [
+                            'For about three years now.',
+                            'Since I was a little kid.',
+                            'I just started last month.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Friend',
+                        interlocutorAvatar: '🎨',
+                        interlocutorText: 'We should do it together sometime!',
+                        options: [
+                            'That sounds like a great idea.',
+                            'I would love that.',
+                            'I prefer doing it alone, to be honest.'
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'intro',
+                title: 'О себе перед классом',
+                subtitle: 'Introducing yourself',
+                image: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=600&q=80',
+                dialogue: [
+                    {
+                        interlocutorName: 'Teacher',
+                        interlocutorAvatar: '👩‍🏫',
+                        interlocutorText: 'Please step forward and introduce yourself to everyone.',
+                        options: [
+                            'Hello everyone, my name is Alex.',
+                            'Hi class, I am very happy to be here.',
+                            'Good morning. I am new to this school.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Teacher',
+                        interlocutorAvatar: '👩‍🏫',
+                        interlocutorText: 'Can you tell us where you are from?',
+                        options: [
+                            'I just moved here from New York.',
+                            'I am originally from London.',
+                            'I have lived in this city my whole life.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Teacher',
+                        interlocutorAvatar: '👩‍🏫',
+                        interlocutorText: 'What are your favorite subjects?',
+                        options: [
+                            'I really like history and biology.',
+                            'Math is my favorite subject.',
+                            'I enjoy art and music the most.'
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'subjects',
+                title: 'Любимые предметы',
+                subtitle: 'Favourite school subjects',
+                image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=600&q=80',
+                dialogue: [
+                    {
+                        interlocutorName: 'Classmate',
+                        interlocutorAvatar: '📝',
+                        interlocutorText: 'What class do you have next?',
+                        options: [
+                            'I have chemistry next.',
+                            'I think it\'s English literature.',
+                            'It is time for physical education.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Classmate',
+                        interlocutorAvatar: '📝',
+                        interlocutorText: 'Chemistry is so hard for me. Do you like it?',
+                        options: [
+                            'Yes, it is my favorite class!',
+                            'Not really, I find it difficult too.',
+                            'It\'s okay, but I prefer physics.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Classmate',
+                        interlocutorAvatar: '📝',
+                        interlocutorText: 'Who is your chemistry teacher?',
+                        options: [
+                            'Mr. Davis teaches my class.',
+                            'I have Mrs. Robinson this year.',
+                            'I don\'t remember his name.'
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'taxi',
+                title: 'Заказ такси',
+                subtitle: 'Ordering a taxi',
+                image: 'taxi.png',
+                dialogue: [
+                    {
+                        interlocutorName: 'Dispatcher',
+                        interlocutorAvatar: '🚕',
+                        interlocutorText: 'City Taxi. Where do you need to be picked up?',
+                        options: [
+                            'I am at the central train station.',
+                            'Please pick me up at the Grand Hotel.',
+                            'I am standing outside the main park.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Dispatcher',
+                        interlocutorAvatar: '🚕',
+                        interlocutorText: 'Alright. And what is your destination?',
+                        options: [
+                            'I need to go to the airport, please.',
+                            'Take me to the city museum.',
+                            'I\'m going to Baker Street.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Dispatcher',
+                        interlocutorAvatar: '🚕',
+                        interlocutorText: 'A car will be there in five minutes. It\'s a silver Toyota.',
+                        options: [
+                            'Thank you, I will be waiting.',
+                            'Great, how much will the ride cost?',
+                            'Can the driver call me when he arrives?'
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'hotel',
+                title: 'Бронирование отеля',
+                subtitle: 'Booking a hotel',
+                image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80',
+                dialogue: [
+                    {
+                        interlocutorName: 'Receptionist',
+                        interlocutorAvatar: '🛎️',
+                        interlocutorText: 'Good evening. Welcome to the Grand Plaza Hotel.',
+                        options: [
+                            'Hi, I have a reservation under the name Smith.',
+                            'Do you have any rooms available for tonight?',
+                            'I would like to book a room for two nights.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Receptionist',
+                        interlocutorAvatar: '🛎️',
+                        interlocutorText: 'Yes, Mr. Smith. I see your reservation for a double room.',
+                        options: [
+                            'That is correct. Is breakfast included?',
+                            'Can I get a room with a nice view?',
+                            'Could we get an extra bed?'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Receptionist',
+                        interlocutorAvatar: '🛎️',
+                        interlocutorText: 'Here is your room key. You are on the fourth floor, room 402.',
+                        options: [
+                            'Thank you very much.',
+                            'What time is checkout tomorrow?',
+                            'Where are the elevators?'
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'doctor',
+                title: 'У врача',
+                subtitle: 'At the doctor',
+                image: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=600&q=80',
+                dialogue: [
+                    {
+                        interlocutorName: 'Doctor',
+                        interlocutorAvatar: '🩺',
+                        interlocutorText: 'Hello. What seems to be the problem today?',
+                        options: [
+                            'I have a terrible headache and a fever.',
+                            'My stomach hurts really badly.',
+                            'I think I twisted my ankle.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Doctor',
+                        interlocutorAvatar: '🩺',
+                        interlocutorText: 'I see. How long have you been feeling this way?',
+                        options: [
+                            'It started yesterday evening.',
+                            'For about three days now.',
+                            'Since I woke up this morning.'
+                        ]
+                    },
+                    {
+                        interlocutorName: 'Doctor',
+                        interlocutorAvatar: '🩺',
+                        interlocutorText: 'I\'ll prescribe some medicine. Make sure you get plenty of rest.',
+                        options: [
+                            'Thank you, doctor. How often should I take it?',
+                            'Do I need to come back for a checkup?',
+                            'Is it okay if I go to work tomorrow?'
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // Состояние приложения
+        let currentSituation = null;
+        let currentTurnIndex = 0;
+        let selectedOptionText = '';
+        let recognition = null;
+        let isRecording = false;
+        let synth = window.speechSynthesis;
+        let currentUtterance = null;
+
+        // DOM Элементы
+        const screens = {
+            home: document.getElementById('home-screen'),
+            dialogue: document.getElementById('dialogue-screen'),
+            finished: document.getElementById('finished-screen')
+        };
+        const homeBtn = document.getElementById('home-btn');
+        const situationsGrid = document.getElementById('situations-grid');
+        
+        const progressLabel = document.getElementById('progress-label');
+        const progressFill = document.getElementById('progress-fill');
+        const situationTitleLabel = document.getElementById('situation-title-label');
+        
+        const interlocutorAvatar = document.getElementById('interlocutor-avatar');
+        const interlocutorName = document.getElementById('interlocutor-name');
+        const interlocutorText = document.getElementById('interlocutor-text');
+        const replayAudioBtn = document.getElementById('replay-audio-btn');
+        
+        const optionsContainer = document.getElementById('options-container');
+        
+        const actionSection = document.getElementById('action-section');
+        const targetPhraseEl = document.getElementById('target-phrase');
+        const micBtn = document.getElementById('mic-btn');
+        const skipBtn = document.getElementById('skip-btn');
+        const feedbackBox = document.getElementById('feedback-box');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const transcriptText = document.getElementById('transcript-text');
+
+        // Инициализация
+        function init() {
+            renderSituations();
+            setupSpeechRecognition();
+            
+            homeBtn.addEventListener('click', showHomeScreen);
+            document.getElementById('back-home-btn').addEventListener('click', showHomeScreen);
+            replayAudioBtn.addEventListener('click', () => speak(interlocutorText.textContent));
+            skipBtn.addEventListener('click', nextTurn);
+            micBtn.addEventListener('click', toggleRecording);
+
+            // Решаем баг Chrome с загрузкой голосов
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = () => synth.getVoices();
+            }
+        }
+
+        // Отрисовка карточек меню
+        function renderSituations() {
+            situationsGrid.innerHTML = '';
+            situations.forEach(sit => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <img src="${sit.image}" alt="${sit.title}">
+                    <div class="card-content">
+                        <h3>${sit.title}</h3>
+                        <p style="color: var(--text-muted); font-size: 14px; margin: 0;">${sit.subtitle} • ${sit.dialogue.length} шагов</p>
+                    </div>
+                `;
+                card.addEventListener('click', () => startDialogue(sit));
+                situationsGrid.appendChild(card);
+            });
+        }
+
+        // Навигация
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => s.style.display = 'none');
+            screens[screenName].style.display = 'block';
+            homeBtn.style.display = screenName === 'home' ? 'none' : 'flex';
+            
+            if (screenName !== 'dialogue') {
+                stopAudio();
+                if (isRecording) stopRecording();
+            }
+        }
+
+        function showHomeScreen() {
+            showScreen('home');
+            window.scrollTo(0, 0);
+        }
+
+        // Логика диалога
+        function startDialogue(situation) {
+            currentSituation = situation;
+            currentTurnIndex = 0;
+            situationTitleLabel.textContent = situation.title;
+            showScreen('dialogue');
+            window.scrollTo(0, 0);
+            renderTurn();
+        }
+
+        function renderTurn() {
+            const turn = currentSituation.dialogue[currentTurnIndex];
+            
+            // Обновление прогресс-бара
+            const total = currentSituation.dialogue.length;
+            progressLabel.textContent = `Шаг ${currentTurnIndex + 1} из ${total}`;
+            progressFill.style.width = `${((currentTurnIndex) / total) * 100}%`;
+            
+            // Обновление собеседника с анимацией
+            const interSection = document.querySelector('.interlocutor-section');
+            interSection.style.animation = 'none';
+            interSection.offsetHeight; /* trigger reflow */
+            interSection.style.animation = 'slideRight 0.5s ease forwards';
+
+            interlocutorAvatar.textContent = turn.interlocutorAvatar;
+            interlocutorName.textContent = turn.interlocutorName;
+            interlocutorText.textContent = turn.interlocutorText;
+            
+            // Сброс UI действий
+            actionSection.style.display = 'none';
+            feedbackBox.className = 'feedback';
+            feedbackBox.style.display = 'none';
+            
+            // Отрисовка кнопок-опций
+            optionsContainer.innerHTML = '';
+            turn.options.forEach(optText => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = optText;
+                btn.addEventListener('click', () => selectOption(btn, optText));
+                optionsContainer.appendChild(btn);
+            });
+
+            // Озвучиваем фразу собеседника с небольшой задержкой
+            setTimeout(() => speak(turn.interlocutorText), 400);
+        }
+
+        function selectOption(btnElement, text) {
+            // Блокируем другие кнопки
+            document.querySelectorAll('.option-btn').forEach(b => {
+                b.classList.remove('selected');
+                b.style.pointerEvents = 'none';
+                b.style.opacity = '0.5';
+            });
+            
+            btnElement.classList.add('selected');
+            btnElement.style.opacity = '1';
+            
+            selectedOptionText = text;
+            targetPhraseEl.textContent = text;
+            actionSection.style.display = 'flex';
+            
+            // Прокрутка вниз к микрофону
+            setTimeout(() => {
+                actionSection.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                // Опционально: автостарт записи (убрал, чтобы юзер был готов)
+                // if(!isRecording && recognition) toggleRecording();
+            }, 300);
+        }
+
+        function nextTurn() {
+            if (isRecording) stopRecording();
+            currentTurnIndex++;
+            
+            if (currentTurnIndex < currentSituation.dialogue.length) {
+                progressFill.style.width = `${((currentTurnIndex) / currentSituation.dialogue.length) * 100}%`;
+                setTimeout(() => {
+                    renderTurn();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 300);
+            } else {
+                finishDialogue();
+            }
+        }
+
+        function finishDialogue() {
+            progressFill.style.width = '100%';
+            setTimeout(() => {
+                showScreen('finished');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Проиграть победный звук (озвучка)
+                const utterance = new SpeechSynthesisUtterance("Well done! Excellent job.");
+                utterance.lang = 'en-US';
+                synth.speak(utterance);
+                
+            }, 600);
+        }
+
+        // Озвучка текста (Speech Synthesis)
+        function speak(text) {
+            stopAudio();
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            currentUtterance.lang = 'en-US';
+            currentUtterance.rate = 0.9; // Чуть медленнее для четкости
+            
+            // Выбираем лучший английский голос (Google US English если есть)
+            const voices = synth.getVoices();
+            const bestVoice = voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) 
+                           || voices.find(v => v.lang.startsWith('en-'));
+            if(bestVoice) currentUtterance.voice = bestVoice;
+            
+            synth.speak(currentUtterance);
+        }
+        
+        function stopAudio() {
+            if (synth.speaking) {
+                synth.cancel();
+            }
+        }
+
+        // Распознавание голоса (Web Speech API)
+        function setupSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                console.error("Speech Recognition не поддерживается в этом браузере.");
+                micBtn.style.display = 'none';
+                document.querySelector('.target-phrase-label').innerHTML = 
+                    '<span style="color:#ef4444">Ваш браузер не поддерживает голосовой ввод.</span><br>Пожалуйста, используйте Chrome или Edge. Вы можете использовать кнопку "Пропустить" для продолжения.';
+                return;
+            }
+            
+            recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+            
+            recognition.onstart = () => {
+                isRecording = true;
+                micBtn.classList.add('recording');
+                micBtn.innerHTML = '<i class="fa-solid fa-stop"></i>';
+                feedbackBox.style.display = 'none';
+            };
+            
+            recognition.onend = () => {
+                isRecording = false;
+                micBtn.classList.remove('recording');
+                micBtn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
+            };
+            
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                checkPronunciation(transcript);
+            };
+            
+            recognition.onerror = (event) => {
+                console.error("Ошибка микрофона:", event.error);
+                isRecording = false;
+                micBtn.classList.remove('recording');
+                micBtn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
+                
+                if (event.error !== 'no-speech' && event.error !== 'aborted') {
+                    showFeedback(false, "Ошибка микрофона. Убедитесь, что дали разрешение.", "");
+                }
+            };
+        }
+
+        function toggleRecording() {
+            if (!recognition) return;
+            
+            if (isRecording) {
+                stopRecording();
+            } else {
+                try {
+                    stopAudio(); // Останавливаем синтез, если он еще говорит
+                    recognition.start();
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        }
+        
+        function stopRecording() {
+            if (recognition && isRecording) {
+                recognition.stop();
+            }
+        }
+
+        // Логика проверки произношения
+        function cleanText(text) {
+            return text.toLowerCase().replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").trim();
+        }
+
+        function checkPronunciation(transcript) {
+            const expected = cleanText(selectedOptionText);
+            const actual = cleanText(transcript);
+            
+            let isCorrect = false;
+            
+            // Полное совпадение или если человек сказал нужную фразу и добавил лишнее
+            if (actual === expected || actual.includes(expected)) {
+                isCorrect = true;
+            } else {
+                // Если неполное совпадение - проверяем по словам
+                const expWords = expected.split(" ");
+                const actWords = actual.split(" ");
+                let matches = 0;
+                
+                expWords.forEach(w => {
+                    if (actWords.includes(w)) matches++;
+                });
+                
+                const matchRatio = matches / expWords.length;
+                const actRatio = actWords.length / expWords.length;
+                
+                // Строгая проверка: минимум 75% слов из фразы сказано правильно
+                // И сказано не меньше 60% от количества слов нужной фразы
+                if (matchRatio >= 0.75 && actRatio >= 0.6) { 
+                    isCorrect = true;
+                }
+            }
+            
+            if (isCorrect) {
+                showFeedback(true, "Отлично! (Well done!)", transcript);
+                micBtn.style.pointerEvents = 'none';
+                micBtn.style.opacity = '0.5';
+                
+                // Автоматический переход к следующему шагу через 2.5 секунды
+                setTimeout(() => {
+                    micBtn.style.pointerEvents = 'auto';
+                    micBtn.style.opacity = '1';
+                    nextTurn();
+                }, 2500);
+            } else {
+                showFeedback(false, "Попробуйте еще раз! (Try again)", transcript);
+            }
+        }
+
+        function showFeedback(isSuccess, message, transcript) {
+            feedbackBox.style.display = 'block';
+            feedbackBox.className = 'feedback ' + (isSuccess ? 'success' : 'error');
+            
+            const icon = isSuccess ? '<i class="fa-solid fa-check-circle"></i>' : '<i class="fa-solid fa-triangle-exclamation"></i>';
+            feedbackMessage.innerHTML = `${icon} ${message}`;
+            
+            if (transcript) {
+                transcriptText.innerHTML = `Вы сказали: <br><strong>"${transcript}"</strong>`;
+            } else {
+                transcriptText.textContent = '';
+            }
+            
+            feedbackBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Запуск
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
